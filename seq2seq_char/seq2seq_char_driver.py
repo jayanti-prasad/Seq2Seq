@@ -4,7 +4,7 @@ from seq2seq_char_preproc import get_data
 from seq2seq_char_preproc import data_vectorize 
 from seq2seq_char_inference import decode_sequence 
 import argparse 
-from tensorflow.keras.utils import plot_model
+#from tensorflow.keras.utils import plot_model
 
 
 if __name__ == "__main__":
@@ -39,15 +39,19 @@ if __name__ == "__main__":
     print("decoder_target_data shape:", decoder_target_data.shape)
 
     # Visuaize the model
-    plot_model(M.model, show_shapes=True)
+    #plot_model(M.model, show_shapes=True)
     plt.show()
 
     hist = M.fit_model(encoder_in_data, decoder_in_data, decoder_target_data, 15)
 
-    fig, axs = plt.subplots(1, 1, figsize=(8, 6))
-    axs.plot(hist.history['loss'], label='Training Loss')
-    axs.plot(hist.history['val_loss'], label='Validation Loss')
-    axs.legend()
+    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    axs[0].plot(hist.history['loss'], label='Training Loss')
+    axs[0].plot(hist.history['val_loss'], label='Validation Loss')
+    axs[0].legend()
+    axs[1].plot(hist.history['accuracy'],label='Training Accurcay')
+    axs[1].plot(hist.history['val_accuracy'],label='Validation Accurcay')
+    axs[1].legend()
+
     plt.show()
 
     for seq_index in range(10):

@@ -68,7 +68,7 @@ class Seq2Seq_Model:
         callbacks = [chkpt, tboard]
 
         # Compiling and training the model
-        self.model.compile(optimizer=Adam(lr=0.01, beta_1=0.9, beta_2=0.999, decay=0.001),metrics=['accuracy'],
+        self.model.compile(optimizer=Adam(lr=0.04, beta_1=0.9, beta_2=0.999, decay=0.001),metrics=['accuracy'],
                            loss='categorical_crossentropy')
 
         hist = self.model.fit([encoder_in_data, decoder_in_data],
