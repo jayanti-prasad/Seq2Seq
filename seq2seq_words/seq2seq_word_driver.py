@@ -6,20 +6,20 @@ from seq2seq_word_train import Seq2Seq_Model
 from seq2seq_word_preproc import  build_vocabulary,text2vec
 from seq2seq_word_inference import decode_sequence 
 import argparse 
+import configparser 
 #from tensorflow.keras.utils import plot_model
 
 
-max_encoder_seq_len = 8
-max_decoder_seq_len = 10
-num_encoder_tokens = 100
-num_decoder_tokens = 100
-
 def data_vectorize(input_texts, target_texts):
 
- 
-    encoder_in_data = np.zeros((len(input_texts), max_encoder_seq_len, num_encoder_tokens), dtype='float32')
-    decoder_in_data = np.zeros((len(input_texts), max_decoder_seq_len, num_decoder_tokens), dtype='float32')
-    decoder_target_data = np.zeros((len(input_texts), max_decoder_seq_len, num_decoder_tokens), dtype='float32')
+    num_encoder_tokens = config.getint('Params','num_encoder_tokens')
+    num_decoder_tokens = config.getint('Params','num_decoder_tokens')
+    max_encoder_vec_len = config.getint('Params','max_encoder_vec_len')
+    max_decoder_vec_len = config.getint('Params','max_decoder_vec_len')
+    
+    encoder_in_data = np.zeros((len(input_texts), max_encoder_vec_len, num_encoder_tokens), dtype='float32')
+    decoder_in_data = np.zeros((len(input_texts), max_decoder_vec_len, num_decoder_tokens), dtype='float32')
+    decoder_target_data = np.zeros((len(input_texts), max_decoder_vec_len, num_decoder_tokens), dtype='float32')
 
     for i in range (0, len (input_texts)):
        if  (len (input_texts[i]) > 0)  & (len (target_texts[i]) > 0): 
@@ -38,46 +38,48 @@ def data_vectorize(input_texts, target_texts):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i','--input-file',help='Input file path')
-    parser.add_argument('-o','--output-dir',help='Output Dir')
-    parser.add_argument('-n','--num-samples',type=int, default=1000,help='Num Samples to use')
-    parser.add_argument('-e','--num-epochs',type=int, default=10, help='Num Epochs')
+    config = configparser.ConfigParser()
 
+    parser.add_argument('-i','--config-file',help='Input file path')
     args = parser.parse_args()
 
-    os.makedirs (args.output_dir,exist_ok=True)
+    config.read(args.config_file)
+
+    num_encoder_tokens = config.getint('Params','num_encoder_tokens')
+    num_decoder_tokens = config.getint('Params','num_decoder_tokens')
+    max_encoder_vec_len = config.getint('Params','max_encoder_vec_len')
+    max_decoder_vec_len = config.getint('Params','max_decoder_vec_len')
+    num_epochs = config.getint('Params','num_epochs')
+    output_dir = config['Params']['output_dir']
+
+    os.makedirs (config['Params']['output_dir'],exist_ok=True)
     
-    with open(args.input_file, 'r', encoding='utf-8') as f:
+    with open(config['Params']['input_file'], 'r', encoding='utf-8') as f:
         lines = f.read().split('\n')
 
 
     input_texts = []
     output_texts = []
 
-    for i in range (1, 1000):
+    for i in range (1, config.getint ('Params','num_data_points')):
         row = lines[i].split('\t')
-        input_texts.append (row[0])
-        output_texts.append (row[1])
+        if row[0] not in input_texts:
+           input_texts.append (row[0])
+           output_texts.append ("__START__ " + row[1] + " __STOP__")
 
-    V =  build_vocabulary(input_texts, output_texts)
+    print("number of data points:", len(input_texts))
+
+    [vocab_in, vocab_out ] =  build_vocabulary(input_texts, output_texts)
      
-    V[0].to_csv(args.output_dir + os.sep + "input_vocab.csv")
-    V[1].to_csv(args.output_dir + os.sep + "output_vocab.csv")
+    vocab_in.to_csv(output_dir + os.sep + "input_vocab.csv")
+    vocab_out.to_csv(output_dir + os.sep + "output_vocab.csv")
 
-    vocab_in = V[0]
-    vocab_out = V[1]
-     
-
-    input_vecs  = text2vec (input_texts, V[0], num_encoder_tokens, 10)
-    output_vecs = text2vec (output_texts, V[1], num_decoder_tokens, 10)
-
-    #print(input_vecs)
-    #sys.exit()
-
+    input_vecs  = text2vec (input_texts, vocab_in,  num_encoder_tokens, max_encoder_vec_len)
+    output_vecs = text2vec (output_texts, vocab_out, num_decoder_tokens, max_decoder_vec_len)
 
     encoder_in_data, decoder_in_data, decoder_target_data =  data_vectorize(input_vecs, output_vecs)
 
-    M = Seq2Seq_Model(args.output_dir, num_encoder_tokens, num_decoder_tokens)
+    M = Seq2Seq_Model(config)
 
     # Model Summary
     print(M.model.summary())
@@ -91,7 +93,8 @@ if __name__ == "__main__":
     #plot_model(M.model, show_shapes=True)
     plt.show()
 
-    hist = M.fit_model(encoder_in_data, decoder_in_data, decoder_target_data, args.num_epochs)
+    print("num_epcohs")
+    hist = M.fit_model(encoder_in_data, decoder_in_data, decoder_target_data,num_epochs)
 
     fig, axs = plt.subplots(2, 1, figsize=(8, 6))
     axs[0].plot(hist.history['loss'], label='Training Loss')
@@ -103,9 +106,9 @@ if __name__ == "__main__":
 
     plt.show()
 
-    for seq_index in range(10):
+    for seq_index in [10, 50, 100, 103, 200, 304]:
         input_seq = encoder_in_data[seq_index: seq_index + 1]
-        decoded_sentence = decode_sequence(P, M, input_token_id, target_token_id, input_seq)
+        decoded_sentence = decode_sequence(config, M, vocab_in, vocab_out, input_seq)
         print('-')
         print('Input sentence:', input_texts[seq_index])
         print('Decoded sentence:', decoded_sentence)

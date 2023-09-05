@@ -52,7 +52,7 @@ if __name__ == "__main__":
      for i in range (1, 1000):
          row = lines[i].split('\t')
          input_texts.append (row[0])
-         output_texts.append (row[1])
+         output_texts.append ("__START__ " + row[1] + " __STOP__")
 
      V =  build_vocabulary(input_texts, output_texts)
      V[0].to_csv("input_vocab.csv")

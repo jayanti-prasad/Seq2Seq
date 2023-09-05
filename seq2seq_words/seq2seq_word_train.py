@@ -15,10 +15,14 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 
 class Seq2Seq_Model:
-    def __init__(self, workspace, num_encoder_tokens, num_decoder_tokens):
+    def __init__(self, config):
 
-        latent_dim = 50
-        self.workspace = workspace
+        num_encoder_tokens = config.getint('Params','num_encoder_tokens')
+        num_decoder_tokens = config.getint('Params','num_decoder_tokens')
+        latent_dim = config.getint('Params','latent_dim')
+        
+        self.workspace = config['Params']['output_dir']
+        
         self.model_dir = self.workspace + os.sep + "trained_model"
         self.log_dir = self.workspace + os.sep + "log"
 
@@ -58,22 +62,21 @@ class Seq2Seq_Model:
         self.decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states)
 
     def fit_model(self, encoder_in_data, decoder_in_data, decoder_target_data, nepochs):
-        batch_size = 64
 
+        batch_size = 64 
+            
         chkpt = ModelCheckpoint(filepath=self.model_dir + os.sep + "model.hdf5",
-                                save_weights_only=True, monitor='val_loss', mode='min', save_best_only=True)
+             save_weights_only=True, monitor='val_loss', mode='min', save_best_only=True)
 
         tboard = TensorBoard(log_dir=self.log_dir)
-
         callbacks = [chkpt, tboard]
 
         # Compiling and training the model
-        self.model.compile(optimizer=Adam(lr=0.04, beta_1=0.9, beta_2=0.999, decay=0.001),metrics=['accuracy'],
-                           loss='categorical_crossentropy')
-
+        self.model.compile(optimizer=Adam(lr=0.01, beta_1=0.9, beta_2=0.999, decay=0.001),metrics=['accuracy'],
+                     loss='categorical_crossentropy')
         hist = self.model.fit([encoder_in_data, decoder_in_data],
-                              decoder_target_data, callbacks=callbacks, batch_size=batch_size, epochs=nepochs,
-                              validation_split=0.2)
-
+            decoder_target_data, callbacks=callbacks, batch_size=batch_size, epochs=nepochs,
+            validation_split=0.2)
+ 
         return hist
 
