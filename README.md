@@ -52,9 +52,15 @@ In Supervised Machine Leraning we try to minimize a scoring function called the 
 How much we need to adjust a weight depend on by how much amount it is bringing down the loss for a unit change in the weight ie., dL/dw.
 Now the loss function is directly related to the wights of the last layer (output layer) but indirectly related to the weights of the earlier layers.
 
-For example 
 
-dL/dw3= (Dl/dw) * (dw/dw2) * (dw2/dw3) 
+The loss is a function of actual output y(n) and predicted output yhat(n) where yhat(n) is the function of weights of the last layer.
+If the outputs of the layers from the left are yhat(1), yhat(2), ...yhat(n) then
+
+dl/dw(n-2) = dl / dyhat (n) * dyhat (n)/dyhat (n-1) * dyhat (n-1) / dyhat (n-2) * dyhat (n-2) /  dw(n-2)
+
+The gradiant at the left is the product of many grdiants at left which can be very small and can make the left hand side very small - this is called vanishing 
+gradiant problem. 
+
 
 
 
