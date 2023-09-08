@@ -10,7 +10,7 @@ import configparser
 #from tensorflow.keras.utils import plot_model
 
 
-def data_vectorize(input_texts, target_texts):
+def data_vectorize(config, input_texts, target_texts):
 
     num_encoder_tokens = config.getint('Params','num_encoder_tokens')
     num_decoder_tokens = config.getint('Params','num_decoder_tokens')
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     input_vecs  = text2vec (input_texts, vocab_in,  num_encoder_tokens, max_encoder_vec_len)
     output_vecs = text2vec (output_texts, vocab_out, num_decoder_tokens, max_decoder_vec_len)
 
-    encoder_in_data, decoder_in_data, decoder_target_data =  data_vectorize(input_vecs, output_vecs)
+    encoder_in_data, decoder_in_data, decoder_target_data =  data_vectorize(config,input_vecs, output_vecs)
 
     M = Seq2Seq_Model(config)
 
