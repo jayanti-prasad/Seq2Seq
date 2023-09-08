@@ -71,7 +71,7 @@ gradiant problem.
 - [Seq2Seq Models : French to English translation using encoder-decoder model with attention.](https://medium.com/analytics-vidhya/seq2seq-models-french-to-english-translation-using-encoder-decoder-model-with-attention-9c05b2c09af8) 
 
 - [A ten-minute introduction to sequence-to-sequence learning in Keras](https://blog.keras.io/a-ten-minute-introduction-to-sequence-to-sequence-learning-in-keras.html)
-- [Understanding LSTM Networks] (https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
+- [Understanding LSTM Networks ](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
 
 
 ## References 
