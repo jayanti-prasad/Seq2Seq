@@ -1,64 +1,60 @@
-#Sequence to Sequence Models
+# Sequence to Sequence Models
 
-Sequence to Sequence (Seq2Seq) models are one of the most important class of deep learning models
-which have a wide range of applications - from modeling text, time series to audio and many others.
-Most of the Seq2Seq models are based on the work of a paper titled "Sequence to Sequence Learning with Neural Networks" 
-by [https://arxiv.org/abs/1409.3215] (Ilya Sutskever, Oriol Vinyals, Quoc V. Le (Google Team)) in 2014. 
-Since then many important and useful neural network architecrurs have been proposed. Before going to 
-discuss about those let us first understand why sequence to sequence  modeling is so important. 
+## Introduction 
+Sequence-to-Sequence (Seq2Seq) models are one of the most important classes of deep learning models, with a wide range of applications, including text modeling, time series analysis, audio processing, and many others. Most Seq2Seq models are based on the seminal paper titled "Sequence to Sequence Learning with Neural Networks" by Ilya Sutskever, Oriol Vinyals, and Quoc V. Le (Google Team) in 2014 [https://arxiv.org/abs/1409.3215]. Since then, many important and useful neural network architectures have been proposed. Before delving into those, let's first understand why sequence-to-sequence modeling is so significant.
 
-If we look at common data sets they may fall in one of the following catagories:
+If we examine common datasets, they often fall into one of the following categories:
 
-- Tabular data : This is the most common type of data in wich different data points are placed into different rows and
-the columns represent the feature of the data. This type of data has the propery that the ordering of the data points is
-no important. In order to model this kind of data we can employ any architecture which does not respect the ordering. For example when we fit a line to data (X, y) the modeling does not chance even we interchange data points.
+Uncorrelated (Tabular) data: This is the most common type of data, where different data points are organized into rows, and columns represent the features of the data. This type of data doesn't rely on the ordering of data points. To model this kind of data, we can employ any architecture that doesn't consider data ordering. For example, when fitting a line to data (X, y), the modeling remains unchanged even if we interchange data points.
 
+Correlated data: This type of data exhibits correlations between neighboring data points, either in space, time, or both. For example, in images, we know that each pixel is correlated with its neighboring pixels, which is what makes an image unique. Imagine randomizing the pixels, and you'd lose the image's structure. Similar correlations exist in time series data, where future values depend on past values, often spanning multiple time steps. In the context of language, when reading from left to right, it's evident that future words depend on the current and preceding words, creating an ordered sequence. Ordered data sequences like these can be found in various domains, which is the main focus of this project.
 
-- Correlated data : This is kind of data in which the neighbouring data points are correlated. This neighbouhood can be in 
-space or time or in the both. For example, in case of an image we know that any pixel is correlated to its neighbouring pixels,
-in fact this is what makes an image unique. This about randomizing the pixel and you will lose the image. These correlation exist in time series also - what will happen tomorrow depen of what happes today or even many days before today - in simple words past predicts future. In case of time series we have one way correlations. If we look at normal english language text where we 
-read from left to right and it is easy to understand that what word will come into the future depends on what word we have at
-present and before that also. It is a kind of ordered sequence. We may find these sequences (orderd data points) in many domian and that is focus topic of this project here. 
+## How to Model a Sequence
 
-## How to model a sequence 
-There are multiple ways to model a sequence but they all must share a feature - they must have some memory of the past and this
-is what Recurrent Neural Networks or RNN provides. Before going to dicuss that let us recall the fundamental problem of the machine learning - Input - Output mapping.
+There are multiple ways to model a sequence, but they all must incorporate a memory of the past, a feature provided by Recurrent Neural Networks (RNNs). Before delving into that, let's revisit the fundamental problem in machine learning: the input-output mapping.
 
-Let us consider we have input 'X' and output 'y' and so the task of a machine learning model is to find a mapping (non-linear 
-in most cases) that maps X to y:
+Imagine we have an input 'X' and an output 'y.' The task of a machine learning model is to find a mapping, typically nonlinear, that transforms X into y:
 
-y = f (X)
+y = f(X)
 
-Let us consider the most common case of 'sigmoid' non-linearity 
+Consider the common case of the 'sigmoid' nonlinearity:
 
+y = sigmoid(W * X)
 
-y = sigmoid (W *X + b )
+Here, 'W' represents the fitting parameters or 'weights,' and 'b' is the bias term. In practice, we can incorporate the bias 'b' into 'W' by adding a constant to the data 'X,' resulting in:
 
-Here W, are fitting parameters or 'weights' and 'b' is called the bias. In fact we can add one constant in data 'X' and absorb 
-'b' into 'W' and write :
+y = sigmoid(W * X)
 
-y = sigmoid (W * X)
+We can replace the sigmoid function with any other nonlinear function 'f.'
 
-In place of sigmoid, we can use any nonliear function 'f'
+When we apply this function to a series of data points (X1, X2, X3, ...), we obtain corresponding outputs (y1, y2, y3, ...). In this context, the order of data points doesn't matter, as 'W' doesn't possess memory.
 
+To introduce memory into the model, we need to modify the equation as follows:
 
-If we start passing data points (X1, X2, X3, ...) etc to the above function we will get (y1, y2, y3,...) where ordering 
-will not matter - since W does not have a memory.
+h(t) = f(W * X(t) + U * h(t-1))
+y(t) = g(h(t))
 
-In order to have a memory we need to modify the above equation in the following way:
+Here, 'h' represents the memory state, and 'g' is another nonlinear function.
 
-h(t) = f (W X(t) + U * h (t-1)) 
-y(t) = g ( h(t))
+Expanding on the equation:
 
-Here 'h' is called the mory state and 'g' is another  non-liner function. 
+h(t) = f(X(t) + U * (f(W * X(t-1) + U * h(t-2))))
 
+During the machine learning training phase, when we use the above formula, we update the values of the weight matrices 'W' and 'U.' This is how the training process occurs.
 
-Let us expand the above equation :
+## Back Propagation 
 
-h(t) = f ( X(t) + U ( f W(X(t-1) + U * h(t-2)))
+Unline in other neural networks, we use back propagation for RNN networks also but there is some problem. Let us look at how weights are update in neural networks
+under the back propagation scheme. 
 
+In Supervised Machine Leraning we try to minimize a scoring function called the loss function which measures the mismatch between the actual outputs and the predicted output from the neural networks. We keep 'adjusting' the weights of the networks till the mismatch stops decreasing. 
 
+How much we need to adjust a weight depend on by how much amount it is bringing down the loss for a unit change in the weight ie., dL/dw.
+Now the loss function is directly related to the wights of the last layer (output layer) but indirectly related to the weights of the earlier layers.
 
+For example 
+
+dL/dw3= (Dl/dw) * (dw/dw2) * (dw2/dw3) 
 
 
 
